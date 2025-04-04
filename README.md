@@ -2,8 +2,6 @@
 
 # Algoritmos de satisfacción de restricciones
 
-**Evaluación de competencias 3**
-
 ## Objetivo
 
 En esta actividad se espera que los estudiantes desarrollen la habilidad para
