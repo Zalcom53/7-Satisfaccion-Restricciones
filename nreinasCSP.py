@@ -7,13 +7,11 @@ nreinasCSP.py
 
 """
 
-__author__ = 'juliowaissman'
+import csps
+import time
 
 
-import csp
-
-
-class Nreinas(csp.GrafoRestriccion):
+class Nreinas(csps.ProblemaCSP):
     """
     El problema de las n-reinas.
 
@@ -26,95 +24,42 @@ class Nreinas(csp.GrafoRestriccion):
     def __init__(self, n=4):
         """
         Inicializa las n--reinas para n reinas, por lo que:
-
-            dominio[i] = [0, 1, 2, ..., n-1]
-            vecinos[i] = [0, 1, 2, ..., n-1] menos la misma i.
-
-            ¡Recuerda que dominio[i] y vecinos[i] son diccionarios y no listas!
-
         """
-        super().__init__()
-        for var in range(n):
-            self.dominio[var] = set(range(n))
-            self.vecinos[var] = {i for i in range(n) if i != var}
+        self.X = set(range(1, n + 1))
+        self.D = {x: set(range(1, n + 1)) for x in self.X}
+        self.N = {x: self.X.difference({x}) for x in self.X}   
 
-    def restriccion(self, xi_vi, xj_vj):
+    def restriccion_binaria(self, x_i, v_i, x_j, v_j):
         """
         Verifica si se cumple la restriccion binaria entre las variables xi
         y xj cuando a estas se le asignan los valores vi y vj respectivamente.
 
-        La restriccion binaria entre dos reinas, las cuales se comen
-        si estan en la misma posición o en una diagonal. En esos casos
-        hay que devolver False (esto es, no se cumplió con la
-        restricción).
-
-        @param xi: El nombre de una variable
-        @param vi: El valor que toma la variable xi (dentro de self.dominio[xi]
-        @param xj: El nombre de una variable
-        @param vj: El valor que toma la variable xi (dentro de self.dominio[xj]
-
-        @return: True si se cumple la restricción
-
         """
-        xi, vi = xi_vi
-        xj, vj = xj_vj
-        return vi != vj and abs(vi - vj) != abs(xi - xj)
+        return v_i != v_j and abs(v_i - v_j) != abs(x_i - x_j)
 
-    @staticmethod
-    def muestra_asignacion(asignacion):
-        """
-        Muestra la asignación del problema de las N reinas en forma de
-        tablerito.
+def prueba_reinas(n, consistencia=1, max_iter=100):
+    
+    problema = Nreinas(n)
 
-        """
-        n = len(asignacion)
-        interlinea = "+" + "-+" * n
-        print(interlinea)
-        for i in range(n):
-            linea = '|'
-            for j in range(n):
-                linea += 'X|' if j == asignacion[i] else ' |'
-            print(linea)
-            print(interlinea)
-
-
-def prueba_reinas(n, metodo, tipo=1, traza=False):
-    print("\n" + '-' * 20 + '\n Para {} reinas\n'.format(n) + '_' * 20)
-    g_r = Nreinas(n)
-    asignacion = metodo(g_r, ap={}, consist=tipo, traza=traza)
-    if n < 20:
-        Nreinas.muestra_asignacion(asignacion)
-    else:
-        print([asignacion[i] for i in range(n)])
-    print("Y se realizaron {} backtrackings".format(g_r.backtracking))
+    print("\n" + "-" * 20 + f"\nPara {n} reinas")
+    print(f"Usando grafo de restricciones con consistencia {consistencia}")
+    print("-" * 20)
+    
+    t0 = time.time()    
+    asig = csps.asignacion_completa(problema, consistencia=consistencia, verbose=False)
+    t_lapso = time.time() - t0
+    
+    print("Se asignaron las siguientes variables:")
+    print([asig[i] for i in range(1, n + 1)])
+    print("Se realizaron {} backtrackings".format(problema.backtracking))
+    print("Se tardó {:.2f} segundos".format(t_lapso))
 
 
 if __name__ == "__main__":
+    
+    N = 101
+    N_ITER = 10_000
+    #prueba_reinas(N, 0, N_ITER)
+    prueba_reinas(N, 1, N_ITER)
+    prueba_reinas(N, 2, N_ITER)
 
-    # Utilizando 1 consistencia
-    # prueba_reinas(4, csp.asignacion_grafo_restriccion, traza=True, tipo=1)
-    # prueba_reinas(8, csp.asignacion_grafo_restriccion, traza=True, tipo=1)
-    # prueba_reinas(16, csp.asignacion_grafo_restriccion, traza=True, tipo=1)
-    # prueba_reinas(50, csp.asignacion_grafo_restriccion, tipo=1)
-    prueba_reinas(101, csp.asignacion_grafo_restriccion, tipo=1)
-
-    # Utilizando consistencia
-    # ==========================================================================
-    # Probar y comentar los resultados del métdo de arco consistencia
-    # ==========================================================================
-    # prueba_reinas(4, csp.asignacion_grafo_restriccion, traza=True, tipo=2)
-    # prueba_reinas(8, csp.asignacion_grafo_restriccion, traza=True, tipo=2)
-    # prueba_reinas(16, csp.asignacion_grafo_restriccion, traza=True, tipo=2)
-    # prueba_reinas(50, csp.asignacion_grafo_restriccion, tipo=2)
-    prueba_reinas(101, csp.asignacion_grafo_restriccion, tipo=2)
-
-    # Utilizando minimos conflictos
-    # ==========================================================================
-    # Probar y comentar los resultados del métdo de mínios conflictos
-    # ==========================================================================
-    # prueba_reinas(4, csp.min_conflictos)
-    # prueba_reinas(8, csp.min_conflictos)
-    # prueba_reinas(16, csp.min_conflictos)
-    # prueba_reinas(51, csp.min_conflictos)
-    # prueba_reinas(101, csp.min_conflictos)
-    # prueba_reinas(1000, csp.min_conflictos)

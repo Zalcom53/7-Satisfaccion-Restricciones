@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
 """
 sudoku.py
 ------------
@@ -18,17 +16,12 @@ las casillas no asignadas anteriormente si se considera que:
 
 Sea (r1, c1) el renglon y la columna de una casilla y (r2, c2) el
 renglon y la columna de otra casilla, se dice que las casillas
-pertenecen al mismo grupo si y solo si r1/3 == r2/3 y c1/3 == c2/3
-donde / es la división entera (por ejemplo 4/3 = 1 o 8/3 = 2).  Esto
+pertenecen al mismo grupo si y solo si r1//3 == r2//3 y c1//3 == c2//3
+donde // es la división entera (por ejemplo 4//3 = 1 o 8//3 = 2).  Esto
 aplica si se considera 0 como la primer posición.
 
 Para más información sobre sudokus, pueden googlearlo, buscarlos en
-wikipedia o comprar un librito de sudokus de 8 pesos (cuidado, se
-puede perder mucho tiempo resolviendo sudokus).
-
-
-Para revisar la tarea es necesario seguir las siguientes
-instrucciones:
+wikipedia o comprar un librito de sudokus.
 
 Un Sudoku se inicializa como una lista de 81 valores donde los valores
 se encuentran de la manera siguiente:
@@ -47,62 +40,39 @@ entonces es que el valor es desconocido.
 
 """
 
-__author__ = 'juliowaissman'
+
+import csps
+import time
 
 
-import csp
-
-
-class Sudoku(csp.GrafoRestriccion):
-    """
-    Esta es la clase que tienen que desarrollar y comentar. Las
-    variables están dadas desde 0 hasta 81 (un vector) tal como dice
-    arriba. No modificar nada de lo escrito solamente agregar su
-    código.
-
-    """
-
+class Sudoku(csps.ProblemaCSP):
     def __init__(self, pos_ini):
-        """
-        Inicializa el sudoku
+        self.X = set(range(81))
+        self.D = {i: set([val]) if val > 0 else 
+                     set(range(1, 10)) for (i, val) in enumerate(pos_ini)}
 
-        """
-        super().__init__()
+        self.N = {
+            i: set(
+                p for p in range(81) if (
+                p != i and 
+                ( p//9 == i//9 or p%9 == i%9 or 
+                  (p//27 == i//27 and p%9//3 == i%9//3))
+                )
+            ) 
+            for i in range(81)
+        }
 
-        self.dominio = {i: [val] if val > 0 else range(1, 10)
-                        for (i, val) in enumerate(pos_ini)}
+    def restriccion_binaria(self, xi, vi, xj, vj):
+        return vi != vj
+         
 
-        vecinos = {}
-        # =================================================================
-        #  25 puntos: INSERTAR SU CÓDIGO AQUI (para vecinos)
-        # =================================================================
-
-        if not vecinos:
-            raise NotImplementedError("Faltan los vecinos")
-
-    def restriccion_binaria(self, xi_vi, xj_vj):
-        """
-        El mero chuqui. Por favor comenta tu código correctamente
-
-        """
-        xi, vi = xi_vi
-        xj, vj = xj_vj
-
-        # =================================================================
-        #  25 puntos: INSERTAR SU CÓDIGO AQUI
-        # (restricciones entre variables vecinas)
-        # =================================================================
-        raise NotImplementedError("Implementa la restricción binaria")
-
-
-def imprime_sdk(asignación):
+def imprime_sdk(s):
     """
     Imprime un sudoku en pantalla en forma más o menos graciosa. Esta
     función solo sirve para la tarea y para la revisión de la
     tarea. No modificarla por ningun motivo.
 
     """
-    s = [asignación[i] for i in range(81)]
     rayita = '\n-------------+----------------+---------------\n'
     c = ''
     for i in range(9):
@@ -133,9 +103,14 @@ if __name__ == "__main__":
     imprime_sdk(s1)
     print("Solucionando un Sudoku dificil")
     sudoku1 = Sudoku(s1)
-    sol1 = csp.asignacion_grafo_restriccion(sudoku1)
-    imprime_sdk(sol1)
+    t0 = time.time()
+    sol1 = csps.asignacion_completa(sudoku1)
+    t_lapso = time.time() - t0
+    print(f"Tomo {t_lapso:.5f} segundos")
+    print(f"Se realizaron {sudoku1.backtracking} backtrackings")
+    imprime_sdk([sol1[i] for i in range(81)])
 
+    print("\n\nY otro tambien dificil")
     s2 = [4, 0, 0, 0, 0, 0, 8, 0, 5,
           0, 3, 0, 0, 0, 0, 0, 0, 0,
           0, 0, 0, 7, 0, 0, 0, 0, 0,
@@ -148,6 +123,9 @@ if __name__ == "__main__":
 
     imprime_sdk(s2)
     sudoku2 = Sudoku(s2)
-    print("Y otro tambien dificil")
-    sol2 = csp.asignacion_grafo_restriccion(sudoku2)
-    imprime_sdk(sol2)
+    t0 = time.time()
+    sol2 = csps.asignacion_completa(sudoku2)
+    t_lapso = time.time() - t0
+    print(f"Tomo {t_lapso:.5f} segundos")
+    print(f"Se realizaron {sudoku1.backtracking} backtrackings")
+    imprime_sdk([sol2[i] for i in range(81)])
