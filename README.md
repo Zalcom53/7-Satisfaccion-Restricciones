@@ -21,4 +21,4 @@ Lo que hay ya desarrollado es lo siguiente:
 
 ## El proyectito retador
 
-A desarrollar todavía
+Pues eso 😎
